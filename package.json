@@ -1,0 +1,31 @@
+{
+  "name": "@xohu/vue-drag",
+  "version": "1.0.0",
+  "description": "vue-cli vue-drag",
+  "main": "./src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xohu/vue-drag.git",
+    "directory": "vue-drag"
+  },
+  "keywords": [
+    "vue",
+    "drag",
+    "vue-drag"
+  ],
+  "author": "XoHu <zhuqinhu@qq.com>",
+  "license": "MIT",
+  "dependencies": {
+    "vue-touch": "^2.0.0-beta.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/xohu/vue-drag/issues"
+  },
+  "homepage": "https://github.com/xohu/vue-drag/tree/master#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
