@@ -1,8 +1,11 @@
+### 效果演示
+[DEMO 地址](https://xohu.github.io/vue-drag/dist/#/drag/draglist "demo")（可使用 chrome 手机模式预览）
+
 # @xohu/vue-drag
 
 > vue 的 vue-drag 插件
 
-- **安装**
+**安装**
 
   ```
   cnpm install @xohu/vue-drag -S
