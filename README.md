@@ -7,8 +7,14 @@
 
 **安装**
 
-  ```
+  ``` js
   cnpm install @xohu/vue-drag -S
+
+  import VDrag from '@xohu/vue-drag'
+  or
+  import VDrag from '@xohu/vue-drag/packages/drag-list'
+
+  Vue.use(VDrag)
   ```
 
 ## drag-list 插件
@@ -60,4 +66,4 @@
 ```
 
 ## 演示图
-![image](https://xohu.github.io/vue-drag/src/image/demo.gif)
+![image](https://thumbnail0.baidupcs.com/thumbnail/174682b0399eda63a6c208e6c3f32d32?fid=3734421602-250528-1066024967816462&time=1574254800&rt=sh&sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-8vd%2FgdQZaW36TETygruBp0v%2BqQ8%3D&expires=8h&chkv=0&chkbd=0&chkpc=&dp-logid=7511624944755872677&dp-callid=0&size=c710_u400&quality=100&vuk=-&ft=video)
