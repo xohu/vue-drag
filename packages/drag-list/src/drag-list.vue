@@ -13,11 +13,11 @@
         @panend="end"
     >
         <div class="v-drag-content">
-            <slot></slot>
+            <slot v-bind="this"></slot>
         </div>
 
         <div class="v-drag-right">
-            <slot name="right" v-bind="{ closed, closedAll }"></slot>
+            <slot name="right" v-bind="this"></slot>
         </div>
     </v-touch>
 </template>
@@ -89,7 +89,6 @@ export default {
             type: Object,
             default: () => ({})
         },
-
         enabled: {
             type: [Object, Boolean],
             default: true
@@ -123,41 +122,52 @@ export default {
             configDrag.drag = $el.querySelector('.v-drag-content');
             configDrag.dragR = $el.querySelector('.v-drag-right');
 
-            if(!$el.dragRW) {
+            if (!$el.dragRW) {
                 $el.dragRW = parseInt(getCss(configDrag.dragR).width.replace(/px/g, '') || 0);
             }
         },
         start(e) {
-            let { configDrag, init, getItem, $ies } = this;
-
-            this.once && this.dragList.forEach(v => (v._uid != this._uid && v.closed()));
+            let { configDrag, getItem, dragList, once, init, $ies } = this;
 
             configDrag.startX = e.srcEvent.clientX;
-            configDrag.startX && (document.body.style.overflow = 'hidden', init());
+
+            if (configDrag.startX) {
+                once && dragList.forEach(v => (v._uid != this._uid && v.closed()));
+                document.body.style.overflow = 'hidden';
+                init();
+            }
         },
         move(e) {
-            let { configDrag, damping, draw, drawMax, $el } = this;
+            let { configDrag, damping, draw, drawMax, $listeners, $el } = this;
             const { additionalEvent, srcEvent } = e;
 
-            if(configDrag.startX) {
+            if (configDrag.startX) {
                 if(additionalEvent == 'panleft') {
                     configDrag.moveR = 0;
                     configDrag.moveL = configDrag.startX - srcEvent.clientX;
+
+                    if (damping) {
+                        configDrag.moveL = configDrag.moveL / damping;
+                    }
                 }
 
-                if(additionalEvent == 'panright') {
+                if (additionalEvent == 'panright') {
                     configDrag.moveL = 0;
                     configDrag.moveR = srcEvent.clientX - configDrag.startX;
+
+                    if (damping) {
+                        configDrag.moveR = configDrag.moveR / damping;
+                    }
                 }
 
                 let distance = configDrag.move = srcEvent.clientX - configDrag.startX;
                 let rightDistance = $el.dragRW + configDrag.move;
-                if(damping) {
+                if (damping) {
                     distance = distance / damping;
                     rightDistance = $el.dragRW + (configDrag.move / damping);
                 }
 
-                if($el.open) {
+                if ($el.open) {
                     distance -= $el.dragRW;
                     rightDistance -= $el.dragRW;
                 }
@@ -168,33 +178,35 @@ export default {
                 configDrag.dragR.classList.remove('transitionS');
                 configDrag.dragR.style.transform = `translate3d(${ rightDistance >= 0 ? rightDistance : 0 }px, 0, 0)`;  // 不允许超过 drag-right 宽度
                 
-                if(rightDistance < 0 && draw) {
+                if (rightDistance < 0 && draw) {
                     const distance = parseInt(rightDistance.toString().replace(/-/g, '')); 
                     (distance < drawMax || !drawMax) && (configDrag.dragR.style.width = `${ $el.dragRW + distance }px`);
                 }
+
+                $listeners.moved && this.$emit('moved', this);
             }
         },
         end(e) {
-            let { configDrag, checkStatus, open, close, $el } = this;
+            let { configDrag, checkStatus, damping, open, close, $el } = this;
 
             if(configDrag.startX) {
                 // 未打开，左移小于指定距离则关闭
-                if(!$el.open && configDrag.moveL <= open) { checkStatus(false); return }
+                if (!$el.open && configDrag.moveL <= open) { checkStatus(false); return }
 
                 // 未打开，左移大于指定距离则打开
-                if(!$el.open && configDrag.moveL > open) { checkStatus(true); return }
+                if (!$el.open && configDrag.moveL > open) { checkStatus(true); return }
 
                 // 已打开，左移小于指定距离则回弹
-                if($el.open && configDrag.moveL) { checkStatus(true); return }
+                if ($el.open && configDrag.moveL) { checkStatus(true); return }
 
                 // 未打开，右移则关闭
-                if(!$el.open && configDrag.moveR) { checkStatus(false); return }
+                if (!$el.open && configDrag.moveR) { checkStatus(false); return }
 
                 // 已打开，右移大于指定距离则关闭
-                if($el.open && configDrag.moveR > close) { checkStatus(false); return }
+                if ($el.open && configDrag.moveR > close) { checkStatus(false); return }
 
                 // 已打开，右移小于指定距离则回弹
-                if($el.open && configDrag.moveR) { checkStatus(true); return }
+                if ($el.open && configDrag.moveR) { checkStatus(true); return }
             }
         },
         opend() {
@@ -213,17 +225,21 @@ export default {
             this.dragList.forEach(v => v.closed());
         },
         checkStatus(status) {
-            let { configDrag, draw, $el } = this;
+            let { configDrag, draw, $listeners, $el } = this;
             let distanceX = 0, distanceRX = 0;
 
             $el.open = status;
 
-            if($el.open) {
+            if ($el.open) {
                 distanceX = `-${ $el.dragRW }px`;
                 distanceRX = 0;
+
+                $listeners.opend && this.$emit('opend', this);
             } else {
                 distanceX = 0;
                 distanceRX = '100%';
+
+                $listeners.closed && this.$emit('closed', this);
             }
 
             configDrag.drag.classList.add('transitionS');
@@ -239,7 +255,7 @@ export default {
             let el = null;
 
             (function recursive(ele, name) {
-                if(RegExp(name, 'g').test(ele.className)) {
+                if (RegExp(name, 'g').test(ele.className)) {
                     el = ele;
                     return;
                 } else {
