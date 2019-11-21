@@ -18,6 +18,7 @@
   ```
 
 ## drag-list 插件
+
 ### Attributes
 
 | 参数 | 说明 | 类型 | 可选值 | 默认值 |
@@ -30,21 +31,23 @@
 | drawMax | 右侧拉伸最大值（默认不限制） | number | — | 0 |
 | once | 是否每次只展开一个 | boolean | true / false | true |
 
-### Methods
-
-| 事件名 | 说明 | 参数 |
-| ------ | ------ | ------ |
-| opend | 打开内容 | — |
-| closed | 关闭内容 | — |
-| closedAll | 关闭所有内容 | — |
-
 ### Events
 
 | 事件名 | 说明 | 参数 |
 | ------ | ------ | ------ |
+| start | 开始执行时回调 | this（组件实例） |
 | opend | 打开后回调 | this（组件实例） |
 | moved | 移动中回调 | this（组件实例） |
 | closed | 关闭后回调 | this（组件实例） |
+
+### Methods
+
+| 事件名 | 说明 | 参数 |
+| ------ | ------ | ------ |
+| opend | 打开滑块 | — |
+| opendAll | 打开所有滑块 | — |
+| closed | 关闭滑块 | — |
+| closedAll | 关闭所有滑块 | — |
 
 ### Scoped Slot
 

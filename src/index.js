@@ -1,4 +1,5 @@
 import DragList from '../packages/drag-list/index.js';
+const pkg = require('@xohu/vue-drag/package');
 
 const components = [
     DragList
@@ -13,7 +14,7 @@ if (typeof window !== 'undefined' && window.Vue) {
 }
 
 export default {
-    version: '1.0.2',
+    version: pkg.version,
     install,
     DragList
 }

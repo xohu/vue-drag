@@ -24,7 +24,7 @@
 
 <script>
 import drag from '@xohu/vue-drag/src/mixins/drag.js';
-import { getCss } from '@xohu/vue-drag/src/utils/index.js';
+import { getCss, disabledMouseWheel, cancelDisMouseWheel } from '@xohu/vue-drag/src/utils/index.js';
 
 export default {
     name: 'v-drag-list',
@@ -75,7 +75,7 @@ export default {
         },
         panOptions: {
             type: Object,
-            default: () => ({ direction: 'horizontal' })
+            default: () => ({ direction: 'horizontal', threshold: 20 })
         },
         pinchOptions: {
             type: Object,
@@ -127,14 +127,15 @@ export default {
             }
         },
         start(e) {
-            let { configDrag, getItem, dragList, once, init, $ies } = this;
+            let { configDrag, getItem, dragList, once, init, $listeners } = this;
 
             configDrag.startX = e.srcEvent.clientX;
 
             if (configDrag.startX) {
-                once && dragList.forEach(v => (v._uid != this._uid && v.closed()));
-                document.body.style.overflow = 'hidden';
                 init();
+                once && dragList.forEach(v => (v._uid != this._uid && v.closed()));
+                disabledMouseWheel();
+                $listeners.start && this.$emit('start', this);
             }
         },
         move(e) {
@@ -210,16 +211,23 @@ export default {
             }
         },
         opend() {
-            const { configDrag, checkStatus, init } = this;
+            const { configDrag, checkStatus, init, $el } = this;
 
-            init();
-            checkStatus(true);
+            if (!$el.open) {
+                init();
+                checkStatus(true);
+            }
+        },
+        opendAll() {
+            this.dragList.forEach(v => v.opend());
         },
         closed() {
-            const { configDrag, checkStatus, init } = this;
+            const { configDrag, checkStatus, init, $el } = this;
 
-            init();
-            checkStatus(false);
+            if ($el.open) {
+                init();
+                checkStatus(false);
+            }
         },
         closedAll() {
             this.dragList.forEach(v => v.closed());
@@ -249,7 +257,7 @@ export default {
             configDrag.dragR.style.transform = `translate3d(${ distanceRX }, 0, 0)`;
 
             draw && (configDrag.dragR.style.width = `${ $el.dragRW }px`);
-            document.body.style.overflow = 'auto';
+            cancelDisMouseWheel();
         },
         getNode(ele, name) {
             let el = null;

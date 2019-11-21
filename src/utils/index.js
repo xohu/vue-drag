@@ -52,4 +52,30 @@ module.exports = new class Prototype {
 
         return val;
     }
+
+    disabledMouseWheel () {  
+        document.body.style.overflow = 'hidden';
+        document.addEventListener('DOMMouseScroll', this.scrollFunc, false);  
+        document.addEventListener('mousewheel', this.scrollFunc, false);
+    }
+
+    cancelDisMouseWheel () {
+        document.body.style.overflow = 'auto';
+        document.removeEventListener('DOMMouseScroll', this.scrollFunc, false);
+        document.removeEventListener('mousewheel', this.scrollFunc, false);
+    }  
+    scrollFunc (evt) {  
+        evt = evt || window.event;  
+        if(evt.preventDefault) {  
+            // Firefox  
+            evt.preventDefault();  
+            evt.stopPropagation();  
+        } else{  
+            // IE  
+            evt.cancelBubble = true;  
+            evt.returnValue = false;  
+        }
+
+        return false;  
+    }
 }
