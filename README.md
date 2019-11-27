@@ -53,8 +53,8 @@
 
 | name | 说明 | 参数 |
 | ------ | ------ | ------ |
-| — | 主体内容 | this（组件实例） |
-| right | 右侧滑块内容 | this（组件实例） |
+| — | 主体内容 | { opend, closed, opendAll, closedAll } |
+| right | 右侧滑块内容 | { opend, closed, opendAll, closedAll } |
 
 ## 使用
 

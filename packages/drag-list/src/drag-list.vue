@@ -1,5 +1,5 @@
 <template>
-    <v-touch class="v-drag-list-components" 
+    <v-touch ref="vTouch" class="v-drag-list-components" 
         :tag="tag" 
         :options="options" 
         :tap-options="tapOptions" 
@@ -7,24 +7,24 @@
         :pinch-options="pinchOptions" 
         :rotate-options="rotateOptions" 
         :swipe-options="swipeOptions" 
-        :enabled="enabled"
+        :enabled="enableds"
         @panstart="start" 
         @panmove="move" 
         @panend="end"
     >
         <div class="v-drag-content">
-            <slot v-bind="this"></slot>
+            <slot v-bind="{ opend, closed, opendAll, closedAll }"></slot>
         </div>
 
         <div class="v-drag-right">
-            <slot name="right" v-bind="this"></slot>
+            <slot name="right" v-bind="{ opend, closed, opendAll, closedAll }"></slot>
         </div>
     </v-touch>
 </template>
 
 <script>
 import drag from '@xohu/vue-drag/src/mixins/drag.js';
-import { getCss, disabledMouseWheel, cancelDisMouseWheel } from '@xohu/vue-drag/src/utils/index.js';
+import { getCss, eventUtil } from '@xohu/vue-drag/src/utils/index.js';
 
 export default {
     name: 'v-drag-list',
@@ -75,7 +75,7 @@ export default {
         },
         panOptions: {
             type: Object,
-            default: () => ({ direction: 'horizontal', threshold: 20 })
+            default: () => ({ direction: 'horizontal' })
         },
         pinchOptions: {
             type: Object,
@@ -96,10 +96,12 @@ export default {
     },
     data() {
         return {
+            enableds: this.enabled,
             configDrag: {
+                fx: '',
                 dragL: null,    // 左侧容器
                 drag: null,     // 内容容器
-                dragR: null,    // 右侧容易
+                dragR: null,    // 右侧容器
                 startX: 0,      // 开始位置
                 moveL: 0,       // 往左移动的距离
                 moveR: 0,       // 往右移动的距离
@@ -109,14 +111,34 @@ export default {
     },
     mixins: [drag],
     mounted() {
-        const self = this;
-
-        self.$nextTick(() => {
-            self.dragList.push(self)
-        })
+        this.$nextTick(this.init)
     },
     methods: { 
         init() {
+            const self = this;
+            
+            self.dragList.push(self);
+
+            eventUtil.listenTouch(self.$el, { 
+                move: (e, v) => {
+                    if(/left|right/.test(v)) {
+                        if(e.preventDefault) {  
+                            e.preventDefault();  
+                            e.stopPropagation();  
+                        } else{
+                            e.cancelBubble = true;  
+                            e.returnValue = false;  
+                        }
+                    }
+
+                    if(/up|down/.test(v)) {
+                        self.enableds = false;
+                    }
+                },
+                end: () => self.enableds = true
+            });
+        },
+        initDrag() {
             const { configDrag, $ies, $el } = this;
 
             configDrag.drag = $el.querySelector('.v-drag-content');
@@ -127,14 +149,14 @@ export default {
             }
         },
         start(e) {
-            let { configDrag, getItem, dragList, once, init, $listeners } = this;
+            let { configDrag, getItem, dragList, once, initDrag, $listeners } = this;
+            const { additionalEvent, srcEvent } = e;
 
-            configDrag.startX = e.srcEvent.clientX;
+            configDrag.startX = srcEvent.clientX;
 
             if (configDrag.startX) {
-                init();
+                initDrag();
                 once && dragList.forEach(v => (v._uid != this._uid && v.closed()));
-                disabledMouseWheel();
                 $listeners.start && this.$emit('start', this);
             }
         },
@@ -211,10 +233,10 @@ export default {
             }
         },
         opend() {
-            const { configDrag, checkStatus, init, $el } = this;
+            const { configDrag, checkStatus, initDrag, $el } = this;
 
             if (!$el.open) {
-                init();
+                initDrag();
                 checkStatus(true);
             }
         },
@@ -222,10 +244,10 @@ export default {
             this.dragList.forEach(v => v.opend());
         },
         closed() {
-            const { configDrag, checkStatus, init, $el } = this;
+            const { configDrag, checkStatus, initDrag, $el } = this;
 
             if ($el.open) {
-                init();
+                initDrag();
                 checkStatus(false);
             }
         },
@@ -257,7 +279,6 @@ export default {
             configDrag.dragR.style.transform = `translate3d(${ distanceRX }, 0, 0)`;
 
             draw && (configDrag.dragR.style.width = `${ $el.dragRW }px`);
-            cancelDisMouseWheel();
         },
         getNode(ele, name) {
             let el = null;
